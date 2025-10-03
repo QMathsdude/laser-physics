@@ -20,4 +20,5 @@ Figure 1: Two dimensional finesse
 
 
 https://github.com/user-attachments/assets/c63416cf-cb95-4a47-bab9-21d15e8805c9
+
 Figure 2: Self-Healing Properties of Airy Beam
