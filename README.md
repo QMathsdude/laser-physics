@@ -18,9 +18,9 @@ It is truly rewarding to be able to apply the theories and equations learnt in l
 Figure 1: Two dimensional finesse
 </p>
 
-
-
-<video width="630" height="300" src="./images/self-healing-airy-beam.mp4"></video>
-<p align="center">
+<p align="center>
+  https://github.com/user-attachments/assets/c63416cf-cb95-4a47-bab9-21d15e8805c9
+</p>
+<p align="center>
 Figure 2: Self-Healing Properties of Airy Beam
 </p>
