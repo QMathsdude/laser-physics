@@ -20,9 +20,7 @@ Figure 1: Two dimensional finesse
 
 
 
-<div align="center">
-<video src="./images/self-healing-airy-beam.mp4" width="600" height="500" controls></video>
-</div>
+<iframe width="600" height="500" src="./images/self-healing-airy-beam.mp4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 <p align="center">
 Figure 2: Self-Healing Properties of Airy Beam
 </p>
