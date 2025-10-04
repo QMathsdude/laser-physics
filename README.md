@@ -10,7 +10,8 @@ Currently, I have completed two laser projects which are:
 # Results
 It is truly rewarding to be able to apply the theories and equations learnt in lectures, and see the results firsthand.
 
-[fabry-perot-ui-trimmed.webm](https://github.com/user-attachments/assets/50f5eca4-5438-4b36-a8b3-beeeb40613f3)
+[fabry-perot-ui.webm](https://github.com/user-attachments/assets/900a239b-c53c-4b7d-8dec-965ec4bcb84a)
+
 
 <p align="center">
 Figure 1: Fabry Perot Interferometer UI
