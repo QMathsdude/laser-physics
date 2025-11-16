@@ -398,7 +398,7 @@ class FabryPerotApp(tb.Frame):
     
     def create_graph_cavity(self):
         # Creation of graph frame
-        self.cavity_frame = tb.Labelframe(self.main_frame, text="Interference Pattern and Finesse", bootstyle="success")
+        self.cavity_frame = tb.Labelframe(self.main_frame, text="Laser Cavity (Mirrors Only)", bootstyle="success")
         self.cavity_frame.grid(row=2, column=1, pady=10, padx=10, sticky=NSEW)
         
         # Create figure and axes
