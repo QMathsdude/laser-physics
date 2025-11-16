@@ -584,10 +584,10 @@ class FabryPerotApp(tb.Frame):
             # Update focal points
             self.f1_point.set_offsets([curv1 * 0.5, 0])
             self.f2_point.set_offsets([d - (curv2 * 0.5), 0])
-            new_label_f1 = rf'Focal Point $f_1={f1}$' # update legend
-            self.finesse_marker.set_label(new_label_f1)
-            new_label_f2 = rf'Focal Point $f_2={f2}$' # update legend
-            self.finesse_marker.set_label(new_label_f2)
+            new_label_f1 = rf'Focal Point $f_1={f1:.2f}$' # update legend
+            self.f1_point.set_label(new_label_f1)
+            new_label_f2 = rf'Focal Point $f_2={d-f2:.2f}$' # update legend
+            self.f2_point.set_label(new_label_f2)
             self.ax4.legend(loc='upper right')
             
             # Update ray diagrams
