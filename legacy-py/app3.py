@@ -29,7 +29,14 @@ class FabryPerotApp(tb.Frame):
         self.k = tb.DoubleVar(master=self)
         self.update_k()
         
-        # Pre-calculated values for interference and finesse plotting
+        # Adds trace to every variable
+        self.R.trace_add("write", lambda *args: [self.update_graph()])
+        self.n.trace_add("write", lambda *args: self.update_graph())
+        self.d.trace_add("write", lambda *args: self.update_graph())
+        self.labda.trace_add("write", lambda *args: [self.update_k(), self.update_graph()])
+        
+        
+        # Pre-calculated values for interference, finesse and stability plotting
         self.I0 = 1.0                  # Obtain initial intensity
         self.radius = None             # Radius array
         self.theta = None              # Theta array
@@ -39,6 +46,9 @@ class FabryPerotApp(tb.Frame):
         self.calculate_intensity()     # Calculate intensity distribution and finesse
         self.R_arr = (np.arange(0, 100, 1)) * 0.01 # Reflectivity array for plotting finesse graph
         self.F_arr = (np.pi * np.sqrt(self.R_arr)) / (1 - self.R_arr) # Finesse array for plotting finesse graph
+        self.g_arr_left = -np.arange(-6.0, 0, 0.1)
+        self.g_arr_right = np.arange(0.1, 6.1, 0.1)
+        self.g_max = self.g_arr_right.max()
         
         # Ttkbootstrap Style
         self.style = tb.Style()
@@ -118,34 +128,43 @@ class FabryPerotApp(tb.Frame):
         rcParams['font.family'] = ['Liberation Serif', 'serif']
         rcParams['mathtext.fontset'] = 'cm'
         rcParams['figure.dpi'] = 100
-        # style.use('seaborn-v0_8')
         
         # Create figure and axes
-        self.fig1 = Figure(figsize=(8, 4))
-        self.ax1 = self.fig1.add_subplot(121)
-        self.ax2 = self.fig1.add_subplot(122)
+        self.fig = Figure(figsize=(8, 4))
+        self.ax1 = self.fig.add_subplot(131)
+        self.ax2 = self.fig.add_subplot(132)
+        self.ax3 = self.fig.add_subplot(133)
         
         # 1. Intensity Distribution Plot
         self.ax1.set_title(r"Intensity Distribution, $\mathbf{I}$", fontsize=12)
-        fringes = self.ax1.imshow(self.intensity, cmap='hot', aspect='equal')
-        self.fig1.colorbar(fringes, ax=self.ax1, orientation='vertical', fraction=0.05, pad=0.05)
+        self.fringes = self.ax1.imshow(self.intensity, cmap='hot', aspect='equal')
+        self.colorbar = self.fig.colorbar(self.fringes, ax=self.ax1, orientation='vertical', fraction=0.05, pad=0.05)
         
         # 2. Finesse Plot
-        print(self.R_arr)
-        print(self.F_arr)
         self.ax2.set_title(r"Plot of Finesse against Reflectivity $(\mathcal{F}\text{ vs }\mathcal{R})$")
-        self.ax2.plot(self.R_arr, self.F_arr, color='royalblue')
-        self.ax2.scatter(self.R.get(), self.finesse, color='navy', marker='^')
+        (self.finesse_line,) = self.ax2.plot(self.R_arr, self.F_arr, color='royalblue')
+        self.finesse_marker = self.ax2.scatter(self.R.get(), self.finesse, color='navy', marker='^', label=r'Finesse, $\mathcal{F}$')
+        self.ax2.axhline(y=0.0, color='black', ls='--', lw=0.8)
+        self.ax2.axvline(x=1.0, color='black', ls='--', lw=0.8)
         self.ax2.grid(ls=':', alpha=0.8)
-    
+        self.ax2.legend(loc='upper left')
         # Set aspect ratio to make plot area square
         data_ratio = (self.F_arr.max() - self.F_arr.min()) / (self.R_arr.max() - self.R_arr.min())
         self.ax2.set_aspect(1.0 / data_ratio)
         
         # 3. Stability curve (TODO)
+        self.ax3.set_title("Stability Curve, ($g_2$ vs $g_1$)")
+        self.ax3.plot(self.g_arr_right, 1 / self.g_arr_right, color='darkorange', label=r"$g_2 = 1 - g_1$")
+        self.ax3.plot(-self.g_arr_right, - 1 / self.g_arr_right, color='darkorange')
+        self.ax3.set_xlim(-self.g_max, self.g_max)
+        self.ax3.set_ylim(-self.g_max, self.g_max)
+        self.ax3.axhline(y=0.0, color='black', ls='--', lw=0.8)
+        self.ax3.axvline(x=0.0, color='black', ls='--', lw=0.8)
+        self.ax3.grid(ls=':', alpha=0.8)
+        self.ax3.set_aspect('equal')
         
         # Add canvas to tkinter
-        self.canvas = FigureCanvasTkAgg(self.fig1, master=self.graph_frame)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.graph_frame)
         self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
         
     def create_sliders(self):
@@ -277,15 +296,22 @@ class FabryPerotApp(tb.Frame):
     def round_scale(self, value):
         """Round the scale value to 2 decimal places."""
         self.R.set(round(float(value), 2))
+        self.update_graph()
         
     def round_scale_n(self, value):
+        """Round the scale value to 2 decimal places."""
         self.n.set(round(float(value), 2))
+        self.update_graph()
         
     def round_scale_d(self, value):
+        """Round the scale value to 2 decimal places."""
         self.d.set(round(float(value), 2))
+        self.update_graph()
         
     def round_scale_wavelength(self, value):
+        """Round the scale value to integer."""
         self.labda.set(int(float(value)))
+        self.update_graph()
     
     def validate_R(self, R):
         """Validate Reflectivity input R to be a float 0.0 <= R <= 0.99 with max 2 decimal places."""
@@ -303,7 +329,7 @@ class FabryPerotApp(tb.Frame):
             # If it's a failed conversion and not "."' or "0.", reject
             return False
         # 4. Check range 0. 0 < R < 0.99
-        if not (0.0 <= value <= 0.99): return False #
+        if not (0.0 <= value <= 0.99): return False
         # 5. Check Decimal Limit (2 d.p.)
         if '.' in R:
             integer_part, decimal_part = R.split('.', 1)
@@ -315,86 +341,71 @@ class FabryPerotApp(tb.Frame):
         # The number is valid, within range, and has an acceptable format/length.
         return True
     
+    # TODO: Modularize this function.
+    # - Float version: Have decimal and 2 d.p. 
+    # - Int version: Have no decimal
+    # - Perhaps some logi like: if 0 < x < 1000 then auto-int and if 0 < x < 10.00 then float with 2 d.p.
+    # - Still need take into account units i.e. nm, mm, etc. 
+    # - Right now validation is within textbox, so its usage might be clunky. Update validation to calculation, if invalid values then just use the previous valid value.
+    # Rushing so no time now.
     def validate_n(self, n):
         """Validate Refractive Index input n to be a float 1.00 <= n <= 3.00 with max 2 decimal places."""
-        # 1. Don't allow empty string
         if n == "": return False
-        # 2. Partial CheckL allow "0" but reject "1", "2", etc., or "01"
-        if n.isdigit() and int(n) > 0: return False # Also handles cases like "01" by converting to int(1)
-        # 3. Check for numeric validity first (or a partial entry)
+        if n.isdigit() and int(n) > 0: return False 
         try: value = float(n)
         except ValueError:
-            # Not a number (e.g., "hello")
             if n.count('.') > 1 or n.startswith('-'): return False
-            # If the user input is only '.' reject
             if n == ".": return False
-            # If it's a failed conversion and not "."' or "0.", reject
             return False
-        # 4. Check range 0. 0 < n < 0.99
         if not (1.0 <= value <= 3.00): return False
-        # 5. Check Decimal Limit (2 d.p.)
         if '.' in n:
             integer_part, decimal_part = n.split('.', 1)
-            # Check for invalid integer part (already partially handled by 1.5, but for completeness)
-            if integer_part and int(integer_part) > 0: return False # Catches "1.0", "2.5", etc.
-            # Check the length of the fractional part
-            if len(decimal_part) > 2: return False # Reject if there are more than 2 decimal digits (e.g., "0.123")\
-                
-        # The number is valid, within range, and has an acceptable format/length.
+            if integer_part and int(integer_part) > 0: return False
+            if len(decimal_part) > 2: return False
+            
         return True
     
     def validate_d(self, d):
         """Validate Refractive Index input d to be an float 0.0 <= d <= 10.00mm with max 2 decimal places."""
-        # 1. Don't allow empty string
         if d == "": return False
-        # 3. Check for numeric validity first (or a partial entry)
         try: value = float(d)
         except ValueError:
-            # Not a number (e.g., "hello")
             if d.count('.') > 1 or d.startswith('-'): return False
-            # If the user input is only '.' reject
             if d == ".": return False
-            # If it's a failed conversion and not "."' or "0.", reject
             return False
-        # 4. Check range 0. 0 < n < 0.99
         if not (0.0 <= value <= 10.00): return False
-        # 5. Check Decimal Limit (2 d.p.)
         if '.' in d:
             integer_part, decimal_part = d.split('.', 1)
-            # Check the length of the fractional part
-            if len(decimal_part) > 2: return False # Reject if there are more than 2 decimal digits (e.g., "0.123")\
-                
-        # The number is valid, within range, and has an acceptable format/length.
+            if len(decimal_part) > 2: return False                
         return True
     
     def validate_labda(self, labda):
-        """Validate Refractive Index input wavelength to be an float 0.0 <= wavelength <= 10.00mm with max 2 decimal places."""
-        # 1. Don't allow empty string
-        if labda == "":
-            return False # Allow deletion to empty string (user wants to clear the field)
-        # 2. Reject if the input contains a decimal point or a negative sign
-        if '.' in labda or '-' in labda:
-            return False
-        # 3. Check if the input consists only of digits (which implies a valid integer)
-        if not labda.isdigit():
-            # This handles non-numeric characters (e.g., "a", "1a")
-            return False
-        # 4. Check the range
-        try:
-            value = int(labda)
-        except ValueError:
-            # Should not happen if isdigit() passed, but for safety
-            return False
-        # Assuming you want integers between 10 and 1000, inclusive
-        if 10 <= value <= 1000:
-            return True
-        else:
-            # Allows the user to type "1" (which is an invalid value but a valid start to "10")
-            # This is a common pattern to allow partial typing.
-            # If the current input is a prefix of a valid number, allow it.
-            if len(labda) < 4:
-                 return True # Allow the user to type "1", "10", "100" as they lead to a valid number
-            return False
+        """Validate wavelength input: integer only, 10 <= λ <= 1000 (nm)."""
+        if labda == "": return False
+        if not labda.isdigit(): return False
+        try: value = int(labda)
+        except ValueError: return False
+        return 10 <= value <= 1000
+    
+    # ---------- Update graphs ----------
+    
+    def update_graph(self):
+        """Recalculate physics values and update both graphs."""
+        
+        # --- Recalculate all physics quantities ---
+        # self.calculate_radius_theta()
+        self.calculate_intensity()
+        
+        # --- Update Intensity graph ---
+        
+        # 1. Intensity Distribution Plot
+        self.fringes.set_data(self.intensity) # never update colorbar because causes issues near R = 0.
+        
+        # 2. Finesse Plot
+        self.finesse_marker.set_offsets([self.R.get(), self.finesse]) # update scatter point
+        
+        self.canvas.draw_idle()  # redraw the canvas
+
 
     # ---------- Helpers ----------
     
@@ -403,7 +414,7 @@ class FabryPerotApp(tb.Frame):
         new_theme = self.theme_dropdown.get()
         self.style.theme_use(new_theme)
         
-    def update_k(self):
+    def update_k(self, *args):
         # Automatically update k when labda changes
         lam = self.labda.get() * self.NM
         self.k.set(2 * np.pi / lam)
