@@ -5,7 +5,7 @@ a = Analysis(
     ['fabry-perot.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('logo.png', '.')],
     hiddenimports=['PIL._tkinter_finder'],
     hookspath=[],
     hooksconfig={},
