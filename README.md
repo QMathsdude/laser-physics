@@ -27,8 +27,8 @@ In order to run this application using Python, perform the following steps after
 
 Packaging the simulation into a single executable file has been tested for both Linux and Windows, peform the following :
 
-1. While in double-p environment, change to app directory — `cd app`.
-2. Package the py file alongside it's dependencies — `pyinstaller double-pendulum.spec`.
+1. While in laser environment, change to app directory — `cd app`.
+2. Package the py file alongside it's dependencies — `pyinstaller fabry-perot.spec`.
 
 ### ⚠️ Known Issues
 The following are some know issues within the application :
