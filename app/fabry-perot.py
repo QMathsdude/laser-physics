@@ -25,7 +25,7 @@ class FabryPerotApp(tb.Frame):
     def __init__(self, root):
         # GUI window
         super().__init__(root)
-        self.pack(fill=BOTH, expand=YES, padx=20, pady=20)
+        self.pack(fill=BOTH, expand=YES, padx=20, pady=10)
         
         # Application font
         self.safe_font = self.get_safe_font()
@@ -99,7 +99,7 @@ class FabryPerotApp(tb.Frame):
     def create_header(self):
         # 1. Header label
         header_frame = tb.Frame(self)
-        header_frame.pack(fill=X, pady=(0, 10))
+        header_frame.pack(fill=X, pady=(0, 5))
         
         header_label = tb.Label(
             header_frame,
@@ -218,7 +218,7 @@ class FabryPerotApp(tb.Frame):
         
         label_R = tb.Label(self.R_frame,
                            text=r"Reflectivity, R:",
-                           font=(self.safe_font, 10))
+                           font=(self.safe_font, 8))
         slider_R = tb.Scale(self.R_frame,
                             bootstyle="info",
                             variable=self.R,
@@ -249,7 +249,7 @@ class FabryPerotApp(tb.Frame):
         
         label_n = tb.Label(self.n_frame,
                            text=r"Refractive Index, n:",
-                           font=(self.safe_font, 10))
+                           font=(self.safe_font, 8))
         slider_n = tb.Scale(self.n_frame,
                             bootstyle="info",
                             variable=self.n,
@@ -281,7 +281,7 @@ class FabryPerotApp(tb.Frame):
         
         label_d = tb.Label(self.d_frame,
                            text=r"Separation, d (mm):",
-                           font=(self.safe_font, 10))
+                           font=(self.safe_font, 8))
         slider_d = tb.Scale(self.d_frame,
                             bootstyle="info",
                             variable=self.d,
@@ -313,7 +313,7 @@ class FabryPerotApp(tb.Frame):
         
         label_labda = tb.Label(self.labda_frame,
                            text=r"Wavelength, λ (nm):",
-                           font=(self.safe_font, 10))
+                           font=(self.safe_font, 8))
         slider_labda = tb.Scale(self.labda_frame,
                             bootstyle="info",
                             variable=self.labda,
@@ -345,7 +345,7 @@ class FabryPerotApp(tb.Frame):
         
         label_curv1 = tb.Label(self.curv1_frame,
                            text=r"Mirror 1 Curvature, (mm):",
-                           font=(self.safe_font, 10))
+                           font=(self.safe_font, 8))
         slider_curv1 = tb.Scale(self.curv1_frame,
                             bootstyle="info",
                             variable=self.curv1,
@@ -377,7 +377,7 @@ class FabryPerotApp(tb.Frame):
         
         label_curv2 = tb.Label(self.curv2_frame,
                            text=r"Mirror 2 Curvature, (mm):",
-                           font=(self.safe_font, 10))
+                           font=(self.safe_font, 8))
         slider_curv2 = tb.Scale(self.curv2_frame,
                             bootstyle="info",
                             variable=self.curv2,
