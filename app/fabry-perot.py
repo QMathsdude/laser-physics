@@ -1,13 +1,21 @@
+"""
+MIT License
+
+Copyright (c) 2025 Errol Tay
+
+See LICENSE for full license text.
+"""
+
 import ttkbootstrap as tb
 from ttkbootstrap.constants import BOTH, TOP, LEFT, RIGHT, HORIZONTAL, YES, X, Y, NSEW, EW
-from tkinter import TclError
 
+import platform
 import numpy as np
 import matplotlib.patches as patches
 from matplotlib.path import Path
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.pyplot import rcParams, style
+from matplotlib.pyplot import rcParams
 
 class FabryPerotApp(tb.Frame):
     # Class variables
@@ -18,6 +26,9 @@ class FabryPerotApp(tb.Frame):
         # GUI window
         super().__init__(root)
         self.pack(fill=BOTH, expand=YES, padx=20, pady=20)
+        
+        # Application font
+        self.safe_font = self.get_safe_font()
         
         # Parameters
         self.labda = tb.DoubleVar(master=self, value=550)            # Wavelength
@@ -93,7 +104,7 @@ class FabryPerotApp(tb.Frame):
         header_label = tb.Label(
             header_frame,
             text=f"Fabry-Perot Interferometer Simulator",
-            font=("Liberation Sans", 22, "bold"),
+            font=(self.safe_font, 22, "bold"),
             bootstyle="danger"
         )
         header_label.pack(side=LEFT, padx=(5, 10))
@@ -105,7 +116,7 @@ class FabryPerotApp(tb.Frame):
             values=themes,
             state="readonly",
             bootstyle="danger",
-            font=("Liberation Sans", 10)
+            font=(self.safe_font, 10)
         )
         self.theme_dropdown.pack(side=RIGHT, padx=5)
         self.theme_dropdown.set(self.style.theme.name)
@@ -128,7 +139,7 @@ class FabryPerotApp(tb.Frame):
             self.main_frame,
             height=2,
             wrap="word",
-            font=("Liberation Sans", 10, "bold"),
+            font=(self.safe_font, 10, "bold"),
         )
         description_box.insert("end",
             "Fabry-Perot cavity is an optical resonator formed by two parallel reflecting mirrors. It is a common cavity found within lasers that enable laser light to gain energy through repeated relections. Move the sliders to adjust the parameters of the cavity and observe how the intensity distribution and finesse change accordingly."
@@ -143,7 +154,7 @@ class FabryPerotApp(tb.Frame):
         
         # MPL customization
         rcParams['text.usetex'] = False
-        rcParams['font.family'] = ['Liberation Serif', 'serif']
+        rcParams['font.family'] = ['serif']
         rcParams['mathtext.fontset'] = 'cm'
         rcParams['figure.dpi'] = 100
         
@@ -172,9 +183,13 @@ class FabryPerotApp(tb.Frame):
         
         # 3. Stability curve 
         self.ax3.set_title("Stability Curve, ($g_2$ vs $g_1$)")
-        self.ax3.fill_between(self.g_arr_right, 1 / self.g_arr_right, color="seagreen", edgecolor="seagreen", alpha=0.3, linewidth=1.5, zorder=0) # fill are beneath curve
-        self.ax3.fill_between(self.g_arr_left, 1 / self.g_arr_left, color="royalblue", edgecolor="royalblue", alpha=0.3, linewidth=1.5, zorder=0)
-        self.g1g2_marker = self.ax3.scatter(self.g1.get(), self.g2.get(), color='crimson', marker='o', s=10, label=rf'($g_1,g_2$)$=$({self.g1.get():.2f}, {self.g2.get():.2f})', zorder=1)
+        g_arr_left = np.append(self.g_arr_left, 0) # Plotting shaded region
+        g_arr_right = np.insert(self.g_arr_right, 0, 0)
+        y_g_arr_left = np.append(1 / self.g_arr_left, -15)
+        y_g_arr_right = np.insert(1 / self.g_arr_right, 0, 15)
+        self.ax3.fill_between(g_arr_right, y_g_arr_right, color="seagreen", edgecolor="seagreen", alpha=0.3, linewidth=1.5, zorder=0) # fill are beneath curve
+        self.ax3.fill_between(g_arr_left, y_g_arr_left, color="royalblue", edgecolor="royalblue", alpha=0.3, linewidth=1.5, zorder=0)
+        self.g1g2_marker = self.ax3.scatter(self.g1.get(), self.g2.get(), color='magenta', marker='o', s=10, label=rf'($g_1,g_2$)$=$({self.g1.get():.2f}, {self.g2.get():.2f})', zorder=1)
         self.ax3.set_xlim(-self.g_max, self.g_max)
         self.ax3.set_ylim(-self.g_max, self.g_max)
         self.ax3.axhline(y=0.0, color='black', ls='--', lw=0.8)
@@ -196,14 +211,14 @@ class FabryPerotApp(tb.Frame):
         
         # 1. Reflectivity
         self.R_frame = tb.Frame(self.slider_frame)
-        self.R_frame.grid(row=0, column=0, sticky=EW, padx=10, pady=5)
+        self.R_frame.grid(row=0, column=0, sticky=EW, padx=10, pady=0)
         for i in range(3): self.R_frame.columnconfigure(i, weight=0)
         self.R_frame.columnconfigure(1, weight=1) # only slider frame is expandable
         self.R_frame.rowconfigure(0, weight=0)
         
         label_R = tb.Label(self.R_frame,
                            text=r"Reflectivity, R:",
-                           font=("Liberation Sans", 10))
+                           font=(self.safe_font, 10))
         slider_R = tb.Scale(self.R_frame,
                             bootstyle="info",
                             variable=self.R,
@@ -227,14 +242,14 @@ class FabryPerotApp(tb.Frame):
         
         # 2. Refractive Index
         self.n_frame = tb.Frame(self.slider_frame)
-        self.n_frame.grid(row=1, column=0, sticky=EW, padx=10, pady=5)
+        self.n_frame.grid(row=1, column=0, sticky=EW, padx=10, pady=0)
         for i in range(3): self.n_frame.columnconfigure(i, weight=0)
         self.n_frame.columnconfigure(1, weight=1) # only slider frame is expandable
         self.n_frame.rowconfigure(0, weight=0)
         
         label_n = tb.Label(self.n_frame,
                            text=r"Refractive Index, n:",
-                           font=("Liberation Sans", 10))
+                           font=(self.safe_font, 10))
         slider_n = tb.Scale(self.n_frame,
                             bootstyle="info",
                             variable=self.n,
@@ -259,14 +274,14 @@ class FabryPerotApp(tb.Frame):
         
         # 3. Separation distance
         self.d_frame = tb.Frame(self.slider_frame)
-        self.d_frame.grid(row=2, column=0, sticky=EW, padx=10, pady=5)
+        self.d_frame.grid(row=2, column=0, sticky=EW, padx=10, pady=0)
         for i in range(3): self.d_frame.columnconfigure(i, weight=0)
         self.d_frame.columnconfigure(1, weight=1) # only slider frame is expandable
         self.d_frame.rowconfigure(0, weight=0)
         
         label_d = tb.Label(self.d_frame,
                            text=r"Separation, d (mm):",
-                           font=("Liberation Sans", 10))
+                           font=(self.safe_font, 10))
         slider_d = tb.Scale(self.d_frame,
                             bootstyle="info",
                             variable=self.d,
@@ -291,14 +306,14 @@ class FabryPerotApp(tb.Frame):
         
         # 4. Wavelength distance
         self.labda_frame = tb.Frame(self.slider_frame)
-        self.labda_frame.grid(row=3, column=0, sticky=EW, padx=10, pady=5)
+        self.labda_frame.grid(row=3, column=0, sticky=EW, padx=10, pady=0)
         for i in range(3): self.labda_frame.columnconfigure(i, weight=0)
         self.labda_frame.columnconfigure(1, weight=1) # only slider frame is expandable
         self.labda_frame.rowconfigure(0, weight=0)
         
         label_labda = tb.Label(self.labda_frame,
                            text=r"Wavelength, λ (nm):",
-                           font=("Liberation Sans", 10))
+                           font=(self.safe_font, 10))
         slider_labda = tb.Scale(self.labda_frame,
                             bootstyle="info",
                             variable=self.labda,
@@ -323,14 +338,14 @@ class FabryPerotApp(tb.Frame):
         
         # 5. Curvature 1 
         self.curv1_frame = tb.Frame(self.slider_frame)
-        self.curv1_frame.grid(row=4, column=0, sticky=EW, padx=10, pady=5)
+        self.curv1_frame.grid(row=4, column=0, sticky=EW, padx=10, pady=0)
         for i in range(3): self.curv1_frame.columnconfigure(i, weight=0)
         self.curv1_frame.columnconfigure(1, weight=1) # only slider frame is expandable
         self.curv1_frame.rowconfigure(0, weight=0)
         
         label_curv1 = tb.Label(self.curv1_frame,
                            text=r"Mirror 1 Curvature, (mm):",
-                           font=("Liberation Sans", 10))
+                           font=(self.safe_font, 10))
         slider_curv1 = tb.Scale(self.curv1_frame,
                             bootstyle="info",
                             variable=self.curv1,
@@ -355,14 +370,14 @@ class FabryPerotApp(tb.Frame):
         
         # 6. Curvature 2 
         self.curv2_frame = tb.Frame(self.slider_frame)
-        self.curv2_frame.grid(row=5, column=0, sticky=EW, padx=10, pady=5)
+        self.curv2_frame.grid(row=5, column=0, sticky=EW, padx=10, pady=0)
         for i in range(3): self.curv2_frame.columnconfigure(i, weight=0)
         self.curv2_frame.columnconfigure(1, weight=1) # only slider frame is expandable
         self.curv2_frame.rowconfigure(0, weight=0)
         
         label_curv2 = tb.Label(self.curv2_frame,
                            text=r"Mirror 2 Curvature, (mm):",
-                           font=("Liberation Sans", 10))
+                           font=(self.safe_font, 10))
         slider_curv2 = tb.Scale(self.curv2_frame,
                             bootstyle="info",
                             variable=self.curv2,
@@ -387,7 +402,7 @@ class FabryPerotApp(tb.Frame):
         
         # 7. Reset Button
         self.reset_button_frame = tb.Frame(self.slider_frame)
-        self.reset_button_frame.grid(row=6, column=0, sticky=EW, padx=10, pady=5)
+        self.reset_button_frame.grid(row=6, column=0, sticky=EW, padx=10, pady=0)
         reset_btn = tb.Button(
             self.reset_button_frame,
             text="Reset",
@@ -402,12 +417,11 @@ class FabryPerotApp(tb.Frame):
         self.cavity_frame.grid(row=2, column=1, pady=10, padx=10, sticky=NSEW)
         
         # Create figure and axes
-        self.fig2 = Figure(figsize=(6, 4))
+        self.fig2 = Figure(figsize=(5, 3))
         self.ax4 = self.fig2.add_subplot(111)
         
         # 4. Cavity diagram
-        self.ax4.set_title("Cavity with Mirror Diagram")
-        self.ax4.set_xlabel("Distance (mm)")
+        self.ax4.set_title("FP-Cavity with Reflective Mirror")
         self.ax4.set_ylabel("Height (mm)")
         lens_patch_left, lens_patch_right = self.create_lenses_patches(self.curv1.get(), self.curv2.get(), self.d.get())
         self.ax4.add_patch(lens_patch_left)
@@ -418,8 +432,8 @@ class FabryPerotApp(tb.Frame):
         # Focal points
         d = self.d.get()
         f1, f2 = self.curv1.get() * 0.5, self.curv2.get() * 0.5
-        self.f1_point = self.ax4.scatter(f1, 0, color='blue', marker='o', s=15, alpha=0.8, label=rf'Focal Point $f_1={f1}$')
-        self.f2_point = self.ax4.scatter(d - f2, 0, color='red', marker='o', s=15, alpha=0.8, label=rf'Focal Point $f_2={f2}$')
+        self.f1_point = self.ax4.scatter(f1, 0, color='blue', marker='o', s=15, alpha=0.8, label=rf'Focal Point $f_1={f1:.2f}$')
+        self.f2_point = self.ax4.scatter(d - f2, 0, color='red', marker='o', s=15, alpha=0.8, label=rf'Focal Point $f_2={f2:.2f}$')
         self.ax4.legend(loc='upper right')
         # Ray diagrams
         initial_1 = [0.5, 0.7]
@@ -437,8 +451,6 @@ class FabryPerotApp(tb.Frame):
         self.canvas2 = FigureCanvasTkAgg(self.fig2, master=self.cavity_frame)
         self.canvas2.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
         
-        
-    
     # ---------- Validate ----------
     
     def validate_R(self, R):
@@ -535,7 +547,7 @@ class FabryPerotApp(tb.Frame):
         try:
             self.update_graph_intensity()
             self.update_graph_finesse()
-        except TclError: pass
+        except tb.TclError: pass
         
     def update_graph_intensity(self, *args):
         """Recalculates"""
@@ -544,7 +556,7 @@ class FabryPerotApp(tb.Frame):
             self.fringes.set_data(self.intensity)
             
             self.canvas.draw_idle()
-        except TclError: pass
+        except tb.TclError: pass
         
     def update_graph_finesse(self, *args):
         """Recalculates"""
@@ -555,7 +567,7 @@ class FabryPerotApp(tb.Frame):
             self.ax2.legend(loc='upper left')
             
             self.canvas.draw_idle()  
-        except TclError: pass
+        except tb.TclError: pass
 
     def update_graph_stability(self, *args):
         """Recalculates"""
@@ -566,7 +578,7 @@ class FabryPerotApp(tb.Frame):
             self.ax3.legend(loc='upper left')
             
             self.canvas.draw_idle()
-        except TclError: pass
+        except tb.TclError: pass
 
     def update_cavity_diagram(self, *args):
         '''Recalculates '''
@@ -586,7 +598,7 @@ class FabryPerotApp(tb.Frame):
             self.f2_point.set_offsets([d - (curv2 * 0.5), 0])
             new_label_f1 = rf'Focal Point $f_1={f1:.2f}$' # update legend
             self.f1_point.set_label(new_label_f1)
-            new_label_f2 = rf'Focal Point $f_2={d-f2:.2f}$' # update legend
+            new_label_f2 = rf'Focal Point $f_2={f2:.2f}$'
             self.f2_point.set_label(new_label_f2)
             self.ax4.legend(loc='upper right')
             
@@ -604,9 +616,17 @@ class FabryPerotApp(tb.Frame):
             self.travelling_ray2.set_data([-100, d - 0.5], [point_2, -0.7])
             
             self.canvas2.draw_idle()
-        except TclError: pass
+        except tb.TclError: pass
 
     # ---------- Helpers ----------
+    
+    def get_safe_font(self):
+        """Return a safe font based on the operating system."""
+        system = platform.system()
+        if system == "Linux": return "Liberation Sans"
+        elif system == "Windows": return "Segoe UI" 
+        elif system == "Darwin": return "Helvetica" # macOS
+        else: return "Arial"  # Universal fallback
     
     def change_theme(self, event=None):
         """Change the theme of the application."""

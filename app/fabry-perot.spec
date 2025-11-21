@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['app11.py'],
+    ['fabry-perot.py'],
     pathex=[],
     binaries=[],
     datas=[],
