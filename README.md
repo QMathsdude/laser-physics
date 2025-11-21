@@ -37,6 +37,8 @@ The following are some know issues within the application :
 
 <p style="text-align: center;">【<b>I make no promises to fix these issues in the future</b>】</p>
 
+---
+
 ## Self-Healing Properties of Airy Beam
 
 The simulations below used the [LightPipes](https://opticspy.github.io/lightpipes/) library for optical field simulations. LightPipes provides powerful tools for modeling the propagation of light, interference, diffraction, and other wave-optics phenomena, making it especially useful for experiments such as interferometry and beam shaping. 
@@ -60,3 +62,7 @@ In order to run this application using Jupyter Notebook, perform the following s
 3. Activate the environment — `conda activate laser`.
 4. Change to app directory — `cd legacy-airy`.
 5. Run — `self-healing-airy-beam.ipynb`.
+
+## 📄 License
+
+[MIT License](LICENSE)
