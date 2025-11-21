@@ -7,7 +7,7 @@ This repository consists of projects I have made for Laser Physics. Currently, i
 
 The following simulation was made using `Python` and `Ttkbootstrap`. This GUI application allows users to investigate how finesse, $\mathcal{F}$ of a laser changes when modifying the reflectivity of mirror, $R$. Moreover, users can also modify other parameters such as refractive index cavity medium $n$, separation between cavity mirrors $d$, wavelength of light $\lambda$, and the curvature of mirror, $R_1$ and $R_2$. Plots of stability curve and also the actual cavity diagram are also provided, which enable users to easily visualise and understand what eactly happens within the laser cavity.
 
-INSERT VIDEO HERE
+https://github.com/user-attachments/assets/96eaa38e-df3f-46f6-81ac-a275aa1c551e
 
 ### 🛠️ Introduction
 
